@@ -162,7 +162,7 @@ This project was born out of a real problem: losing entire afternoons to YouTube
 
 ## 👨‍💻 About
 
-Built by [Your Name] as a practical solution to a real problem, and as a portfolio project demonstrating:
+Built by ModulasKhwaait as a practical solution to a real problem, and as a portfolio project demonstrating:
 - Python desktop application development
 - System monitoring and Windows API integration
 - Real-time data processing

@@ -1,0 +1,20 @@
+{
+  "tracked_sites": {
+    "youtube.com": {
+      "daily_limit": 60,
+      "nudge_interval": 15,
+      "hard_block": false
+    },
+    "reddit.com": {
+      "daily_limit": 30,
+      "nudge_interval": 10,
+      "hard_block": false
+    }
+  },
+  "work_hours": {
+    "enabled": true,
+    "start": "09:00",
+    "end": "17:00",
+    "stricter_limits": true
+  }
+}

@@ -1,0 +1,30 @@
+# Virtual environment
+venv/
+env/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Logs
+logs/*.log
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Config (personal settings)
+config.json
+
+# Logs
+logs/
+*.log

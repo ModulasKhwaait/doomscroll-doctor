@@ -54,6 +54,11 @@ class DoomScrollDoctorTray:
         """Quit the application."""
         print("\n📊 Generating final summary...")
         summary = self.monitor.get_daily_summary()
+        
+        # Log the summary
+        self.monitor.logger.log_daily_summary(summary)
+        
+        # Send notification
         self.monitor.notifier.send_daily_summary(summary)
         
         self.running = False

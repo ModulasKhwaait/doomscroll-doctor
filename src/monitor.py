@@ -13,7 +13,7 @@ except ImportError:
     print("⚠️  win32gui not available. Window detection may not work.")
 
 from notifier import Notifier
-
+from logger import ActivityLogger
 
 class ActivityMonitor:
     """Monitors browser activity and tracks time on specific sites."""
@@ -33,6 +33,8 @@ class ActivityMonitor:
 
         # Notifier
         self.notifier = Notifier()
+        self.logger = ActivityLogger()
+
 
     
     def load_config(self):
@@ -139,12 +141,21 @@ class ActivityMonitor:
     def _end_session(self):
         """End the current viewing session and update stats."""
         if self.current_site and self.session_start:
-            duration = (datetime.now() - self.session_start).total_seconds() / 60
+            end_time = datetime.now()
+            duration = (end_time - self.session_start).total_seconds() / 60
             
             if self.current_site not in self.daily_stats:
                 self.daily_stats[self.current_site] = 0
             
             self.daily_stats[self.current_site] += duration
+            
+            # LOG THE SESSION
+            self.logger.log_session(
+                site=self.current_site,
+                duration_minutes=duration,
+                start_time=self.session_start,
+                end_time=end_time
+            )
             
             print(f"⏱️  Ended session on {self.current_site}: {duration:.1f} minutes")
             print(f"📊 Total today: {self.daily_stats[self.current_site]:.1f} minutes")
@@ -164,13 +175,19 @@ class ActivityMonitor:
         daily_limit = site_config["daily_limit"]
         nudge_interval = site_config["nudge_interval"]
         
-        # Check if we've hit daily limit
+        # Check if we've hit daily limit with hard block
         if total_today >= daily_limit and site_config.get("hard_block", False):
-            return {
+            block_data = {
                 "type": "BLOCK",
                 "site": self.current_site,
-                "message": f"⛔ Daily limit reached for {self.current_site}!\n\nYou've spent {total_today:.0f}/{daily_limit} minutes today.\n\nTime to get back to work! 💪"
+                "message": f"⛔ Daily limit reached for {self.current_site}!\n\nYou've spent {total_today:.0f}/{daily_limit} minutes today.\n\nTime to get back to work! 💪",
+                "session_time": current_session_minutes,
+                "total_today": total_today,
+                "limit": daily_limit,
+                "severity": "critical"
             }
+            self.logger.log_nudge(block_data)
+            return block_data
         
         # Check if enough time has passed since last nudge
         minutes_since_last_nudge = 999  # Default to large number
@@ -184,6 +201,7 @@ class ActivityMonitor:
             
             time_remaining = daily_limit - total_today
             
+            # Determine severity and message
             if time_remaining <= 0:
                 severity = "warning"
                 message = f"⚠️  You've exceeded your daily limit on {self.current_site}!\n\n" \
@@ -201,7 +219,8 @@ class ActivityMonitor:
                         f"You've been on {self.current_site} for {current_session_minutes:.0f} minutes.\n" \
                         f"Time remaining today: {time_remaining:.0f} minutes"
             
-            return {
+            # Create nudge data
+            nudge_data = {
                 "type": "NUDGE",
                 "severity": severity,
                 "site": self.current_site,
@@ -210,8 +229,14 @@ class ActivityMonitor:
                 "total_today": total_today,
                 "limit": daily_limit
             }
+            
+            # Log the nudge
+            self.logger.log_nudge(nudge_data)
+            
+            return nudge_data
         
         return None
+        
     
     def get_daily_summary(self) -> Dict:
         """Get summary of today's activity."""
